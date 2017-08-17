@@ -7,11 +7,14 @@ setup(
     author='Salvador Olmos Miralles',
     name='sequencer',
     author_email='salvaom11@gmail.com',
-    packages=find_packages(exclude=['source/test']),
+    packages=find_packages('source'),
+    package_dir={
+        '': 'source'
+    },
     install_requires=[
         'sphinx',
         'sphinx_rtd_theme'
     ],
     setup_requires=['pytest-runner'],
-    tests_require=['pytest']
+    tests_require=['pytest', 'pytest-cov']
 )

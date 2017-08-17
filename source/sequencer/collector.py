@@ -14,11 +14,7 @@ try:
 except NameError:
     unicode = str
 
-COLLECTION_REGEX = re.compile(
-    r'(?P<name>\D+(?P<version>\.?\_?v\d+)?[\.\_]?)'
-    r'(?P<number>\d+)'
-    r'(?P<tail>[\.\_]?\w+)?'
-    r'(?P<ext>\.\w+)$'
+COLLECTION_REGEX = re.compile(r'(?P<name>\D+?(?P<version>[\.\_]?v\d+)?[\.\_]?)(?P<number>\d+)(?P<tail>[\.\_]?\w+)?(?P<ext>\.\w+)$'
 )
 
 
@@ -44,7 +40,7 @@ def collect(iterable, collection_regex=None, minimum_instances=2):
         # For a sequence to match, the ony difference must be the number,
         # the only exception to this should be different paddings in the same
         # sequence, but we'll take care of that later.
-        sequence_id = res['name'] + res['version'] + res['tail'] + res['ext']
+        sequence_id = res['name'] + res['tail'] + res['ext']
         sequences[sequence_id].append([item, res])
 
     # Discard round
@@ -86,7 +82,7 @@ def collect(iterable, collection_regex=None, minimum_instances=2):
         frames = [int(x[1]['number']) for x in sequence_items]
 
         sequence_ = sequence.Sequence(
-            head=data['name'] + data['version'],
+            head=data['name'],
             frames=set(frames),
             padding=padding,
             tail=data['tail'] + data['ext']
@@ -98,7 +94,3 @@ def collect(iterable, collection_regex=None, minimum_instances=2):
 
 def _format_nones(item):
     return '' if item is None else item
-
-
-if __name__ == '__main__':
-    print collect(r'G:\Dropbox\projects\weta\sequencer\test\resources\seq_01')
