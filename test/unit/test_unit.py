@@ -47,7 +47,7 @@ RANGE_PARMS = [
     [seq('foo', '.bar', 0, range(10, 20)), 'set_start', 1, (1, 10), None],
     [seq('foo', '.bar', 0, range(10, 20)), 'set_end', 99, (90, 99), None],
     [seq('foo', '.bar', 0, range(10, 20)), 'set', range(10), (0, 9), None],
-    [seq('foo', '.bar', 0, range(10)), 'set', range(11), (0, 9), ValueError],
+    [seq('foo', '.bar', 0, range(10)), 'set', range(11), (0, 10), None],
 ]
 
 MISSING_PARMS = [
@@ -67,6 +67,7 @@ COLLECTOR_PARMS = [
     [['foo01.jpg'], 0, ['foo01.jpg']],
     [['myfile.txt'], 0, ['myfile.txt']],
     [['foo1.jpg', 'foo02.jpg'], 0, ['foo1.jpg', 'foo02.jpg']],
+    [['foo1.jpg', 'foo2.jpg', 'foo03.jpg', 'foo04.jpg'], 2, []],
     [['foo01.jpg', 'foo02.jpg'], 1, []],
 ]
 
@@ -104,6 +105,9 @@ def test_range_change(items, action, value, exp_range, exp_raise):
         if type(e) == exp_raise:
             return
         raise
+    else:
+        if exp_raise:
+            raise ValueError('Did not raise %s' % exp_raise)
 
     assert (seq_.start(), seq_.end()) == exp_range
 
@@ -129,8 +133,8 @@ def test_sequence_alter(items, new_head, new_tail, exp_items):
 @pytest.mark.parametrize('items,exp_seq_count,exp_single', COLLECTOR_PARMS)
 def test_collector_extra_files(items, exp_seq_count, exp_single):
     collection = sequencer.collect(items)
-    assert exp_single == collection[1]
     assert len(collection[0]) == exp_seq_count
+    assert exp_single == collection[1]
 
 
 @pytest.mark.parametrize('items,exp_format', FORMAT_PARMS)
@@ -146,3 +150,38 @@ def test_dir_scan_01():
     assert seq_.head == 'weta'
     assert seq_.tail == '.jpg'
     assert (seq_.start(), seq_.end()) == (1, 18)
+
+
+def test_increment_range_mapping():
+
+    sequence = sequencer.Sequence(
+        head='foo.',
+        tail='.jpg',
+        frames=range(5),
+        padding=3
+    )
+    expected = seq('foo.', '.jpg', 3, range(10))
+
+    sequence.frames = range(10)
+
+    assert sequence.get_mapping().keys() == expected
+
+
+def test_reset():
+    sequence = sequencer.Sequence(
+        head='foo.',
+        tail='.jpg',
+        frames=range(5),
+        padding=3
+    )
+    sequence.frames = range(10)
+    sequence.offset(10)
+    sequence.head = 'bar.'
+    sequence.tail = '.foo'
+    sequence.padding = 10
+    sequence.reset()
+
+    assert sequence.head == 'foo.'
+    assert sequence.tail == '.jpg'
+    assert sequence.frames == range(5)
+    assert sequence.padding == 3
