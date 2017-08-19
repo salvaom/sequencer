@@ -1,3 +1,4 @@
+import collections
 import logging
 
 logger = logging.getLogger(__name__)
@@ -10,11 +11,11 @@ class Sequence(object):
         self.head = head
         self._orig_head = head
 
-        self.frames = list(sorted(set(frames)))
-        self._orig_frames = self.frames
+        self._orig_frames = list(sorted(set(frames)))
+        self.frames = self._orig_frames
 
-        self.padding = padding
-        self._orig_padding = padding
+        self.padding = padding if padding > 1 else None
+        self._orig_padding = self.padding
 
         self.tail = tail
         self._orig_tail = tail
@@ -31,12 +32,10 @@ class Sequence(object):
 
         return missing
 
-    def __repr__(self):
-        return '<%s "%s%s%s" [%s-%s]>' % (
+    def __repr__(self):  # pragma: no cover
+        return '<%s "%s" [%s-%s]>' % (
             __name__ + '.' + self.__class__.__name__,
-            self.head,
-            self._padding_format(),
-            self.tail,
+            self.format(),
             self.start(),
             self.end()
         )
@@ -52,8 +51,21 @@ class Sequence(object):
 
     @frames.setter
     def frames(self, value):
+        if len(value) > len(self._orig_frames):
+            raise ValueError(
+                'Frame count must match the original (%s frames)'
+                % len(self._orig_frames)
+            )
+
         self._frames = list(sorted(set(value)))
         self.missing = self.find_missing_in_range(self._frames)
+
+    def format(self):
+        return '%s%s%s' % (
+            self.head,
+            self._padding_format(),
+            self.tail
+        )
 
     def start(self):
         return min(self.frames)
@@ -73,7 +85,7 @@ class Sequence(object):
         self.offset(offset)
 
     def get_mapping(self):
-        mapping = {}
+        mapping = collections.OrderedDict()
         for index, frame in enumerate(self.frames):
             original = self._orig_head \
                 + self._padding_format() % self._orig_frames[index] \

@@ -15,6 +15,6 @@ setup(
         'sphinx',
         'sphinx_rtd_theme'
     ],
-    setup_requires=['pytest-runner'],
+    setup_requires=['pytest-runner', 'sphinx', 'sphinx_rtd_theme'],
     tests_require=['pytest', 'pytest-cov']
 )

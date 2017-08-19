@@ -10,6 +10,8 @@ Welcome to Sequencer's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   modules/modules
+
 
 
 Indices and tables

@@ -2,7 +2,6 @@ import re
 import os
 import collections
 import logging
-from pprint import pformat
 
 from sequencer import sequence
 
@@ -11,10 +10,14 @@ logger = logging.getLogger(__name__)
 # Python 3 compatibility
 try:
     unicode
-except NameError:
+except NameError:  # pragma: no cover
     unicode = str
 
-COLLECTION_REGEX = re.compile(r'(?P<name>\D+?(?P<version>[\.\_]?v\d+)?[\.\_]?)(?P<number>\d+)(?P<tail>[\.\_]?\w+)?(?P<ext>\.\w+)$'
+COLLECTION_REGEX = re.compile(
+    r'(?P<name>\D+?(?P<version>[\.\_]?v\d+)?[\.\_]?)'
+    r'(?P<number>\d+)'
+    r'(?P<tail>[\.\_]?\w+)?'
+    r'(?P<ext>\.\w+)$'
 )
 
 
@@ -68,10 +71,8 @@ def collect(iterable, collection_regex=None, minimum_instances=2):
 
         # Discard condition #2: less elements than the minimum
         if len(sequence_items) < minimum_instances:
-            for orig, _ in sequence_items:
-                extra.append(orig)
-
-            continue
+            [extra.append(x[0]) for x in sequence_items]
+            deferred_pop.append(sequence_id)
 
     for pop in deferred_pop:
         sequences.pop(pop)
