@@ -92,9 +92,13 @@ class Sequence(object):
             self.end()
         )
 
-    def _padding_format(self):
-        if self.padding:
-            return '%' + str(self.padding).zfill(2) + 'd'
+    def _padding_format(self, orig=False):
+        if orig:
+            padding = self._orig_padding
+        else:
+            padding = self.padding
+        if padding:
+            return '%' + str(padding).zfill(2) + 'd'
         return '%d'
 
     @property
@@ -108,6 +112,11 @@ class Sequence(object):
         self.missing = self.find_missing_in_range(self._frames)
 
     def format(self):
+        '''
+        Returns:
+            str: The formatted name of the sequence in the form of \
+                ``head%04d.tail``
+        '''
         return '%s%s%s' % (
             self.head,
             self._padding_format(),
@@ -115,29 +124,82 @@ class Sequence(object):
         )
 
     def reset(self):
+        '''Resets the sequence to it's original initialization.'''
         self.head = self._orig_head
         self.tail = self._orig_tail
         self.frames = self._orig_frames
         self.padding = self._orig_padding
 
     def start(self):
+        '''
+        Returns:
+            int: The minimum frame within the frame range.
+        '''
         return min(self.frames)
 
     def end(self):
+        '''
+        Returns:
+            int: The maximum frame within the frame range.
+        '''
         return max(self.frames)
 
     def offset(self, amount):
+        '''Offsets the sequence by the given amount.
+
+        Args:
+            amount (int): The amount to offset the sequence.
+        '''
         self.frames = [x + amount for x in self.frames]
 
     def set_start(self, start):
+        '''Shifts the sequence to make it's start match the given input.
+
+        Args:
+            start (int): Desired start of the sequence.
+        '''
         offset = start - self.start()
         self.offset(offset)
 
     def set_end(self, end):
+        '''Shifts the sequence to make it's end match the given input.
+
+        Args:
+            end (int): Desired end of the sequence.
+        '''
         offset = end - self.end()
         self.offset(offset)
 
     def get_mapping(self):
+        '''Returns a mapping between the original sequence elements (keys) and
+        the updated data from the instance. This method is useful for changing
+        existing file sequences.
+
+        Example:
+
+            >>> import sequencer
+            >>> import os
+            >>> import shutil
+            >>>
+            >>> target = './target'
+            >>> os.makedirs(target)
+            >>> source = 'test/resources/seq_01'
+            >>> sequences, extra = sequencer.collect(source)
+            >>> seq = sequences[0]
+            >>> seq.offset(10)
+            >>> seq.padding = 4
+            >>>
+            >>> for orig, dest in seq.get_mapping().items():
+            ...     orig = os.path.join(source, orig)
+            ...     dest = os.path.join(target, dest)
+            ...     shutil.copy2(orig, dest)
+            ...
+            >>> os.listdir(source)
+            ['weta01.jpg', 'weta02.jpg', ...]
+            >>> os.listdir(target)
+            ['weta0011.jpg', 'weta0012.jpg', ...]
+
+        '''
         mapping = collections.OrderedDict()
         for index, frame in enumerate(self.frames):
 
@@ -148,7 +210,7 @@ class Sequence(object):
                 number = self._orig_frames[index]
 
             original = self._orig_head \
-                + self._padding_format() % number \
+                + self._padding_format(True) % number \
                 + self._orig_tail
 
             dest = self.head \
