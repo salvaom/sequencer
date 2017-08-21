@@ -1,5 +1,8 @@
 #!/usr/bin/env python
+import sys
 from setuptools import setup, find_packages
+
+sys.path.append('source')
 
 setup(
     version='0.1.0',

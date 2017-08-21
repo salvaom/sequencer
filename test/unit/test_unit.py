@@ -26,11 +26,6 @@ def seq(head, tail, padding, frames):
     return sequence_
 
 
-# Parametrization for sequence ingestion
-# 0: Sequence
-# 1: Expected head
-# 2: Expected range
-# 3: Expected tail
 INGEST_PARMS = [
     [seq('foo', '.bar', 0, range(10)), 'foo', (0, 9), '.bar'],
     [seq('foo.', '.bar', 0, range(10)), 'foo.', (0, 9), '.bar'],
@@ -38,43 +33,6 @@ INGEST_PARMS = [
     [seq('foo_v1', '.bar', 0, range(10)), 'foo_v1', (0, 9), '.bar'],
     [seq('foo_v1', '.baz.bar', 0, range(10)), 'foo_v1', (0, 9), '.baz.bar'],
     [seq('foo_v1', '.baz_bar', 0, range(10)), 'foo_v1', (0, 9), '.baz_bar'],
-]
-
-
-RANGE_PARMS = [
-    [seq('foo', '.bar', 0, range(10)), 'offset', 10, (10, 19), None],
-    [seq('foo', '.bar', 0, range(10, 20)), 'offset', -10, (0, 9), None],
-    [seq('foo', '.bar', 0, range(10, 20)), 'set_start', 1, (1, 10), None],
-    [seq('foo', '.bar', 0, range(10, 20)), 'set_end', 99, (90, 99), None],
-    [seq('foo', '.bar', 0, range(10, 20)), 'set', range(10), (0, 9), None],
-    [seq('foo', '.bar', 0, range(10)), 'set', range(11), (0, 10), None],
-]
-
-MISSING_PARMS = [
-    [seq('foo', '.bar', 0, range(10) + range(15, 20)), [10, 11, 12, 13, 14]],
-    [seq('foo_v001.', '.bar', 5, range(5) + range(6, 7)), [5]],
-]
-
-SEQ_ALTER_PARMS = [
-    [
-        seq('foo', '.bar', 0, range(10)),
-        'weta', '.exr',
-        seq('weta', '.exr', 0, range(10))
-    ]
-]
-
-COLLECTOR_PARMS = [
-    [['foo01.jpg'], 0, ['foo01.jpg']],
-    [['myfile.txt'], 0, ['myfile.txt']],
-    [['foo1.jpg', 'foo02.jpg'], 0, ['foo1.jpg', 'foo02.jpg']],
-    [['foo1.jpg', 'foo2.jpg', 'foo03.jpg', 'foo04.jpg'], 2, []],
-    [['foo01.jpg', 'foo02.jpg'], 1, []],
-]
-
-FORMAT_PARMS = [
-    [seq('foo_v001', '.bar', 0, range(10)), 'foo_v001%d.bar'],
-    [seq('foo_v001.', '.bar', 0, range(10)), 'foo_v001.%d.bar'],
-    [seq('foo_v001.', '.bar', 4, range(10)), 'foo_v001.%04d.bar'],
 ]
 
 
@@ -86,6 +44,16 @@ def test_sequence_ingestion(items, exp_head, exp_range, exp_tail):
     assert seq_.head == exp_head
     assert (seq_.start(), seq_.end()) == exp_range
     assert seq_.tail == exp_tail
+
+
+RANGE_PARMS = [
+    [seq('foo', '.bar', 0, range(10)), 'offset', 10, (10, 19), None],
+    [seq('foo', '.bar', 0, range(10, 20)), 'offset', -10, (0, 9), None],
+    [seq('foo', '.bar', 0, range(10, 20)), 'set_start', 1, (1, 10), None],
+    [seq('foo', '.bar', 0, range(10, 20)), 'set_end', 99, (90, 99), None],
+    [seq('foo', '.bar', 0, range(10, 20)), 'set', range(10), (0, 9), None],
+    [seq('foo', '.bar', 0, range(10)), 'set', range(11), (0, 10), None],
+]
 
 
 @pytest.mark.parametrize('items,action,value,exp_range,exp_raise', RANGE_PARMS)
@@ -112,11 +80,26 @@ def test_range_change(items, action, value, exp_range, exp_raise):
     assert (seq_.start(), seq_.end()) == exp_range
 
 
+MISSING_PARMS = [
+    [seq('foo', '.bar', 0, range(10) + range(15, 20)), [10, 11, 12, 13, 14]],
+    [seq('foo_v001.', '.bar', 5, range(5) + range(6, 7)), [5]],
+]
+
+
 @pytest.mark.parametrize('items,exp_missing', MISSING_PARMS)
 def test_missing_frames(items, exp_missing):
     seq_ = sequencer.collect(items)[0][0]
 
     assert seq_.missing == exp_missing
+
+
+SEQ_ALTER_PARMS = [
+    [
+        seq('foo', '.bar', 0, range(10)),
+        'weta', '.exr',
+        seq('weta', '.exr', 0, range(10))
+    ]
+]
 
 
 @pytest.mark.parametrize('items,new_head,new_tail,exp_items', SEQ_ALTER_PARMS)
@@ -130,11 +113,27 @@ def test_sequence_alter(items, new_head, new_tail, exp_items):
     assert seq_.get_mapping().values() == exp_items
 
 
+COLLECTOR_PARMS = [
+    [['foo01.jpg'], 0, ['foo01.jpg']],
+    [['myfile.txt'], 0, ['myfile.txt']],
+    [['foo1.jpg', 'foo02.jpg'], 0, ['foo1.jpg', 'foo02.jpg']],
+    [['foo1.jpg', 'foo2.jpg', 'foo03.jpg', 'foo04.jpg'], 2, []],
+    [['foo01.jpg', 'foo02.jpg'], 1, []],
+]
+
+
 @pytest.mark.parametrize('items,exp_seq_count,exp_single', COLLECTOR_PARMS)
 def test_collector_extra_files(items, exp_seq_count, exp_single):
     collection = sequencer.collect(items)
     assert len(collection[0]) == exp_seq_count
     assert exp_single == collection[1]
+
+
+FORMAT_PARMS = [
+    [seq('foo_v001', '.bar', 0, range(10)), 'foo_v001%d.bar'],
+    [seq('foo_v001.', '.bar', 0, range(10)), 'foo_v001.%d.bar'],
+    [seq('foo_v001.', '.bar', 4, range(10)), 'foo_v001.%04d.bar'],
+]
 
 
 @pytest.mark.parametrize('items,exp_format', FORMAT_PARMS)
@@ -150,6 +149,33 @@ def test_dir_scan_01():
     assert seq_.head == 'weta'
     assert seq_.tail == '.jpg'
     assert (seq_.start(), seq_.end()) == (1, 18)
+
+
+def test_collect_with_path():
+    seq_path = os.path.abspath(os.path.join(resources, 'seq_01'))
+    seq_path = os.path.normpath(seq_path)
+    iterable = [os.path.join(seq_path, x) for x in os.listdir(seq_path)]
+
+    seq_ = sequencer.collect(iterable)[0][0]
+
+    assert seq_.head == 'weta'
+    assert seq_.tail == '.jpg'
+    assert (seq_.start(), seq_.end()) == (1, 18)
+    assert seq_.folder == seq_path
+    assert seq_.format() == os.path.join(seq_path, 'weta%02d.jpg')
+    assert seq_.get_mapping().keys() == iterable
+
+
+def test_different_folders():
+    iterable = [
+        '/foo/bar.001.jpg',
+        '/foo/bar.002.jpg',
+        '/baz/bar.003.jpg',
+        '/baz/bar.004.jpg',
+    ]
+
+    seq_ = sequencer.collect(iterable)
+    assert len(seq_[0]) == 2
 
 
 def test_increment_range_mapping():

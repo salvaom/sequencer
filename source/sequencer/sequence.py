@@ -1,4 +1,5 @@
 import collections
+import os
 import logging
 
 logger = logging.getLogger(__name__)
@@ -44,7 +45,8 @@ class Sequence(object):
         >>> sequence.frames
         [10, 11]
         >>> sequence.get_mapping()
-        OrderedDict([('weta.0.jpg', 'atew.10.jpg'), ('weta.1.jpg', 'atew.11.jpg')])
+        OrderedDict(
+        [('weta.0.jpg', 'atew.10.jpg'), ('weta.1.jpg', 'atew.11.jpg')])
 
     Args:
         head (str): Head of the sequence
@@ -53,19 +55,21 @@ class Sequence(object):
         tail (str): Tail of the sequence
     '''
 
-    def __init__(self, head, frames, padding, tail):
+    def __init__(self, head, frames, padding, tail, folder=None):
         self._frames = []
 
         self._orig_head = head
         self._orig_frames = list(sorted(set(frames)))
         self._orig_padding = padding
         self._orig_tail = tail
+        self._orig_folder = folder
 
         self.head = head
         self.frames = self._orig_frames
         self.padding = padding if padding > 1 else None
         self.tail = tail
         self.missing = self.find_missing_in_range(frames)
+        self.folder = self._orig_folder
 
     @staticmethod
     def find_missing_in_range(iterable):
@@ -111,17 +115,26 @@ class Sequence(object):
         self._frames = list(sorted(set(value)))
         self.missing = self.find_missing_in_range(self._frames)
 
+    def _get_folder(self, orig=False):
+        if orig:
+            folder = self._orig_folder
+        else:
+            folder = self.folder
+        return folder + os.sep if folder else ''
+
     def format(self):
         '''
         Returns:
             str: The formatted name of the sequence in the form of \
                 ``head%04d.tail``
         '''
-        return '%s%s%s' % (
+        value = '%s%s%s%s' % (
+            self._get_folder(),
             self.head,
             self._padding_format(),
             self.tail
         )
+        return os.path.normpath(value)
 
     def reset(self):
         '''Resets the sequence to it's original initialization.'''
@@ -209,11 +222,13 @@ class Sequence(object):
             else:
                 number = self._orig_frames[index]
 
-            original = self._orig_head \
+            original = self._get_folder(True) \
+                + self._orig_head \
                 + self._padding_format(True) % number \
                 + self._orig_tail
 
-            dest = self.head \
+            dest = self._get_folder() \
+                + self.head \
                 + self._padding_format() % frame \
                 + self.tail
 

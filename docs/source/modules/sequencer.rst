@@ -1,5 +1,5 @@
-sequencer package
-=================
+API Reference
+=============
 
 Submodules
 ----------

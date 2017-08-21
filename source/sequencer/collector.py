@@ -68,7 +68,11 @@ def collect(iterable, collection_regex=None, minimum_instances=2):
         iterable = os.listdir(iterable)
 
     for item in iterable:
+        folder, item = os.path.split(item)
+        folder = folder or ''
+
         result = collection_regex.match(item)
+
         if not result:
             extra.append(item)
             continue
@@ -79,8 +83,8 @@ def collect(iterable, collection_regex=None, minimum_instances=2):
         # For a sequence to match, the ony difference must be the number,
         # the only exception to this should be different paddings in the same
         # sequence, but we'll take care of that later.
-        sequence_id = res['name'] + res['tail'] + res['ext']
-        sequences[sequence_id].append([item, res])
+        sequence_id = folder + res['name'] + res['tail'] + res['ext']
+        sequences[sequence_id].append([item, res, folder])
 
     # Data digestion
     deferred_pop = []
@@ -99,12 +103,12 @@ def collect(iterable, collection_regex=None, minimum_instances=2):
 
             # All subsequences will have their original ID + the padding,
             # which should be enough to make them unique
-            for item, result in sequence_items:
+            for item, result, folder in sequence_items:
                 key = str(len(result['number']))
                 if key not in subsequences:
                     subsequences[key] = []
 
-                subsequences[key].append([item, result, int(key)])
+                subsequences[key].append([item, result, folder, int(key)])
 
             for subsequence, data in subsequences.items():
                 # Since we are a bit out of the loop here, the minimum check
@@ -142,14 +146,15 @@ def collect(iterable, collection_regex=None, minimum_instances=2):
     # And we can now build the sequences
     sequence_objs = []
     for sequence_id, sequence_items in sequences.items():
-        original, data, padding = sequence_items[0]
+        original, data, folder, padding = sequence_items[0]
         frames = [int(x[1]['number']) for x in sequence_items]
 
         sequence_ = sequence.Sequence(
             head=data['name'],
             frames=set(frames),
             padding=padding,
-            tail=data['tail'] + data['ext']
+            tail=data['tail'] + data['ext'],
+            folder=folder
         )
         sequence_objs.append(sequence_)
 
