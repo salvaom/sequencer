@@ -131,7 +131,7 @@ COLLECTOR_PARMS = [
 def test_collector_extra_files(items, exp_seq_count, exp_single):
     collection = sequencer.collect(items)
     assert len(collection[0]) == exp_seq_count
-    assert exp_single == collection[1]
+    assert all([x in collection[1] for x in exp_single])
 
 
 FORMAT_PARMS = [
