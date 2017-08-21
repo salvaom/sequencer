@@ -6,15 +6,18 @@ logger = logging.getLogger(__name__)
 
 
 class Sequence(object):
-    '''Represents a sequence of elements. The sequence is defined by 4
-    variables:
+    '''Represents a sequence of elements. The sequence is defined by the
+    following attributes:
 
-    1. **Head**: The head is whatever comes before the number. For example, \
-        in ``weta.01.jpg``, it would be ``weta``
-    2. **Frames**: The list of frames that the sequence spans
-    3. **Padding**: The zero padding of those frames
-    4. **Tail**: The tail is whatever comes after the number. For example, in \
-        ``weta.01.jpg``, it would be ``.jpg``
+    * head: The head is whatever comes before the number. For example, \
+        in ``weta.01.jpg``, it would be ``weta``.
+    * frames: The list of frames that the sequence spans.
+    * padding: The zero padding of those frames.
+    * tail: The tail is whatever comes after the number. For example, in \
+        ``weta.01.jpg``, it would be ``.jpg``.
+    * folder: (optional) folder where the sequence lives.
+    * missing: Frames missing in the range between the minimum and maximum \
+        frames.
 
     The :obj:`Sequence` instance also remembers it's original data to easily
     create a mapping from the original to the a sequence.
@@ -44,9 +47,8 @@ class Sequence(object):
         >>> sequence.offset(10)
         >>> sequence.frames
         [10, 11]
-        >>> sequence.get_mapping()
-        OrderedDict(
-        [('weta.0.jpg', 'atew.10.jpg'), ('weta.1.jpg', 'atew.11.jpg')])
+        >>> dict(sequence.get_mapping())
+        {'weta.001.jpg': 'atew.11.jpg', 'weta.000.jpg': 'atew.10.jpg'}
 
     Args:
         head (str): Head of the sequence
@@ -66,6 +68,7 @@ class Sequence(object):
 
         self.head = head
         self.frames = self._orig_frames
+        padding = padding if padding is not None else 1
         self.padding = padding if padding > 1 else None
         self.tail = tail
         self.missing = self.find_missing_in_range(frames)
@@ -120,6 +123,9 @@ class Sequence(object):
             folder = self._orig_folder
         else:
             folder = self.folder
+
+        if folder:
+            folder = folder.replace('\\', os.sep)
         return folder + os.sep if folder else ''
 
     def format(self):
@@ -135,6 +141,13 @@ class Sequence(object):
             self.tail
         )
         return os.path.normpath(value)
+
+    def formatted_frames(self):
+        '''
+        Returns:
+            list: A list with all frames properly formatted
+        '''
+        return [self.format() % x for x in self.frames]
 
     def reset(self):
         '''Resets the sequence to it's original initialization.'''

@@ -12,7 +12,6 @@ Welcome to Sequencer's documentation!
 
    installation
    usage
-   integrations
    modules/sequencer
 
 

@@ -18,6 +18,11 @@ resources = os.path.abspath(os.path.join(
     os.path.dirname(__file__), '..', 'resources'))
 
 
+# Python 3.x
+def lrange(*args):
+    return list(range(*args))
+
+
 def seq(head, tail, padding, frames):
     sequence_ = []
     for i in frames:
@@ -81,8 +86,8 @@ def test_range_change(items, action, value, exp_range, exp_raise):
 
 
 MISSING_PARMS = [
-    [seq('foo', '.bar', 0, range(10) + range(15, 20)), [10, 11, 12, 13, 14]],
-    [seq('foo_v001.', '.bar', 5, range(5) + range(6, 7)), [5]],
+    [seq('foo', '.bar', 0, lrange(10) + lrange(15, 20)), [10, 11, 12, 13, 14]],
+    [seq('foo_v001.', '.bar', 5, lrange(5) + lrange(6, 7)), [5]],
 ]
 
 
@@ -109,8 +114,8 @@ def test_sequence_alter(items, new_head, new_tail, exp_items):
     seq_.head = new_head
     seq_.tail = new_tail
 
-    assert seq_.get_mapping().keys() == items
-    assert seq_.get_mapping().values() == exp_items
+    assert list(seq_.get_mapping().keys()) == items
+    assert list(seq_.get_mapping().values()) == exp_items
 
 
 COLLECTOR_PARMS = [
@@ -163,7 +168,7 @@ def test_collect_with_path():
     assert (seq_.start(), seq_.end()) == (1, 18)
     assert seq_.folder == seq_path
     assert seq_.format() == os.path.join(seq_path, 'weta%02d.jpg')
-    assert seq_.get_mapping().keys() == iterable
+    assert list(seq_.get_mapping().keys()) == iterable
 
 
 def test_different_folders():
@@ -190,7 +195,7 @@ def test_increment_range_mapping():
 
     sequence.frames = range(10)
 
-    assert sequence.get_mapping().keys() == expected
+    assert list(sequence.get_mapping().keys()) == expected
 
 
 def test_reset():
@@ -209,5 +214,16 @@ def test_reset():
 
     assert sequence.head == 'foo.'
     assert sequence.tail == '.jpg'
-    assert sequence.frames == range(5)
+    assert sequence.frames == lrange(5)
     assert sequence.padding == 3
+
+
+def test_formatted_frames():
+    sequence = sequencer.Sequence(
+        head='foo.',
+        tail='.jpg',
+        frames=range(5),
+        padding=3
+    )
+
+    assert sequence.formatted_frames() == seq('foo.', '.jpg', 3, range(5))
