@@ -19,5 +19,14 @@ setup(
         'sphinx_rtd_theme'
     ],
     setup_requires=['pytest-runner', 'sphinx', 'sphinx_rtd_theme'],
-    tests_require=['pytest', 'pytest-cov']
+    tests_require=['pytest', 'pytest-cov'],
+    classifiers=[
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Operating System :: POSIX',
+        'Operating System :: Microsoft :: Windows',
+    ]
 )
