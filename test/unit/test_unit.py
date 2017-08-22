@@ -253,3 +253,65 @@ def test_make_fill_missing():
     sequence.fill_missing()
 
     assert sequence.frames == [1, 2, 3, 4, 5, 6]
+
+
+def test_a_very_specific_case():
+    elements = [
+        'prodeng11.jpg',
+        'prodeng11.png',
+        'prodeng27.jpg',
+        'prodeng32.jpg',
+        'prodeng32.png',
+        'prodeng33.png',
+        'prodeng47.png',
+        'prodeng55.jpg',
+        'prodeng55.png',
+        'prodeng56.jpg',
+        'prodeng68.jpg',
+        'prodeng72.png',
+        'prodeng94.png',
+        'weta17.jpg',
+        'weta22.jpg',
+        'weta37.jpg',
+        'weta55.jpg',
+        'weta96.jpg'
+    ]
+
+    expected_1 = [
+        'prodeng01.jpg',
+        'prodeng02.jpg',
+        'prodeng03.jpg',
+        'prodeng04.jpg',
+        'prodeng05.jpg',
+        'prodeng06.jpg',
+    ]
+    expected_2 = [
+        'prodeng01.png',
+        'prodeng02.png',
+        'prodeng03.png',
+        'prodeng04.png',
+        'prodeng05.png',
+        'prodeng06.png',
+        'prodeng07.png'
+    ]
+    expected_3 = [
+        'weta01.jpg',
+        'weta02.jpg',
+        'weta03.jpg',
+        'weta04.jpg',
+        'weta05.jpg'
+    ]
+
+    sequences = sequencer.collect(elements)
+
+    for sequence in sequences[0]:
+        sequence.set_start(1)
+        sequence.make_continuous()
+
+        if sequence.head == 'prodeng':
+            if sequence.tail == '.jpg':
+                assert sequence.formatted_frames() == expected_1
+            else:
+                assert sequence.formatted_frames() == expected_2
+        else:
+            assert sequence.formatted_frames() == expected_3
