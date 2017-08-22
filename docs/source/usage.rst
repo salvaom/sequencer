@@ -90,16 +90,27 @@ Editing a sequence
     >>> sequence.frames
     [10, 11]
     >>> sequence.get_mapping()
-    OrderedDict(
-    [('weta.0.jpg', 'atew.10.jpg'), ('weta.1.jpg', 'atew.11.jpg')])
+    OrderedDict([('weta.0.jpg', 'atew.10.jpg'), ('weta.1.jpg', 'atew.11.jpg')])
+    >>> sequence.frames = [1001, 1002, 1010]
+    >>> sequence.make_continuous()
+    >>> sequence.frames
+    [1001, 1002, 1003]
 
 
 
 Usage examples
 --------------
 
+Making a sequence continuous
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. literalinclude:: _static/make_continuous.py
+    :emphasize-lines: 18
+
 
 Shifting and copying an existing sequence
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. literalinclude:: _static/sample_copy.py
+    :emphasize-lines: 23

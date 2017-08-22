@@ -149,6 +149,16 @@ class Sequence(object):
         '''
         return [self.format() % x for x in self.frames]
 
+    def make_continuous(self):
+        '''Makes the frame sequence continuous. Shifts all frames in the
+        sequence so all of them are the previous plus one.
+        '''
+        self.frames = range(self.start(), (self.end() + 1) - len(self.missing))
+
+    def fill_missing(self):
+        '''Fills the missing frames by creating them'''
+        self.frames = range(self.start(), self.end() + 1)
+
     def reset(self):
         '''Resets the sequence to it's original initialization.'''
         self.head = self._orig_head

@@ -227,3 +227,29 @@ def test_formatted_frames():
     )
 
     assert sequence.formatted_frames() == seq('foo.', '.jpg', 3, range(5))
+
+
+def test_make_continuous():
+    sequence = sequencer.Sequence(
+        head='foo.',
+        tail='.jpg',
+        frames=[1, 2, 4, 5, 6],
+        padding=3
+    )
+
+    sequence.make_continuous()
+
+    assert sequence.frames == [1, 2, 3, 4, 5]
+
+
+def test_make_fill_missing():
+    sequence = sequencer.Sequence(
+        head='foo.',
+        tail='.jpg',
+        frames=[1, 2, 4, 5, 6],
+        padding=3
+    )
+
+    sequence.fill_missing()
+
+    assert sequence.frames == [1, 2, 3, 4, 5, 6]
