@@ -54,7 +54,7 @@ import os
 import shutil
 
 
-# Source and target folders
+# Source folder
 source_dir = 'test/resources/seq_02'
 
 # List the source files
@@ -72,6 +72,4 @@ for seq in sequences:
         if not os.path.isfile(target):
             print('Moving "%s" to "%s"' % (source, target))
             shutil.move(source, target)
-
-
 ```

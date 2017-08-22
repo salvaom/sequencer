@@ -4,7 +4,7 @@ import os
 import shutil
 
 
-# Source and target folders
+# Source folder
 source_dir = 'test/resources/seq_02'
 
 # List the source files
